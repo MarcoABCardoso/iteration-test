@@ -1,0 +1,29 @@
+{
+  "name": "iteration-test",
+  "version": "1.0.0",
+  "description": "Runs automated testing for a given function to be run iteratively.",
+  "main": "lib/index.js",
+  "dependencies": {
+    "spel2js": "^0.2.7"
+  },
+  "devDependencies": {
+    "eslint": "^7.22.0",
+    "jest": "^26.6.3"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "test": "jest --collectCoverage"
+  },
+  "keywords": [
+    "Test",
+    "Testing",
+    "Automated Testing",
+    "SpEL"
+  ],
+  "author": "macardoso95@gmail.com",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MarcoABCardoso/iteration-test"
+  }
+}
