@@ -21,13 +21,14 @@ let passingTestOptions = {
 }
 
 let failingTestOptions = {
-    testFunction: payload => payload.input.text == 'hello' ? { output: { text: 'Hello, there!' } } : { output: { text: 'Goodbye, now.' } },
+    testFunction: payload => payload.input.text == 'hello' ? { output: { text: 'Hello, there!' }, context: payload.context } : { output: { text: 'Goodbye, now.' }, context: payload.context },
     tests: [
         {
             name: 'foo_passing_test',
             rounds: [
                 { inputExpression: '{ input: { text: "hello" } }', evaluateExpression: 'output.text == "Hello, there!"' },
-                { inputExpression: '{ input: { text: "goodbye" } }', evaluateExpression: 'output.text == "Goodbye, now."' },
+                { inputExpression: 'context = "foobar"', skip: true },
+                { inputExpression: '{ input: { text: "goodbye" }, context: context }', evaluateExpression: 'output.text == "Goodbye, now." && context == "foobar"' },
             ]
         },
         {

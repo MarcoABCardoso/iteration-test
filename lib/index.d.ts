@@ -22,7 +22,8 @@ interface Test {
 
 interface Round {
     inputExpression: string
-    evaluateExpression: string
+    evaluateExpression?: string
+    skip?: boolean
 }
 
 interface TestResults {
