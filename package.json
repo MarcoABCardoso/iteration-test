@@ -1,6 +1,6 @@
 {
   "name": "iteration-test",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Runs automated testing for a given function to be run iteratively.",
   "main": "lib/index.js",
   "dependencies": {
