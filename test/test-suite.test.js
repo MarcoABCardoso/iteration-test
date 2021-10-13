@@ -21,14 +21,14 @@ let passingTestOptions = {
 }
 
 let failingTestOptions = {
-    testFunction: payload => payload.input.text == 'hello' ? { output: { text: 'Hello, there!' }, context: payload.context } : { output: { text: 'Goodbye, now.' }, context: payload.context },
+    testFunction: payload => payload.input.text == 'hello' ? { output: { text: 'Hello, there!' }, context: payload.context || { initial: 'context' } } : { output: { text: 'Goodbye, now.' }, context: payload.context },
     tests: [
         {
             name: 'foo_passing_test',
             rounds: [
                 { inputExpression: '{ input: { text: "hello" } }', evaluateExpression: 'output.text == "Hello, there!"' },
-                { inputExpression: 'context = "foobar"', skip: true },
-                { inputExpression: '{ input: { text: "goodbye" }, context: context }', evaluateExpression: 'output.text == "Goodbye, now." && context == "foobar"' },
+                { inputExpression: 'context.foo = "bar"; _={ context }', skip: true },
+                { inputExpression: '{ input: { text: "goodbye" }, context: context }', evaluateExpression: 'output.text == "Goodbye, now." && context.foo == "bar"' },
             ]
         },
         {
@@ -48,6 +48,18 @@ let failingTestOptions = {
             name: 'foo_broken_test_output',
             rounds: [
                 { inputExpression: '{ input: { text: "hello" } }', evaluateExpression: 'invalidSyntax' },
+            ]
+        },
+        {
+            name: 'foo_malicious_test_1',
+            rounds: [
+                { inputExpression: 'this.constructor.constructor("return process.exit()")()', evaluateExpression: 'this tries to crash the test' },
+            ]
+        },
+        {
+            name: 'foo_malicious_test_2',
+            rounds: [
+                { inputExpression: 'new Proxy({}, {\n  get: function(me, key) { return (arguments.callee.caller.constructor(\'return process.exit()\'))() }\n})', evaluateExpression: 'this tries to crash the test' },
             ]
         }
     ]
@@ -79,7 +91,16 @@ describe('TestSuite', () => {
             let testSuite = new TestSuite(failingTestOptions)
             testSuite.run()
                 .then(results => {
-                    expect(results).toEqual({ details: [{ name: 'foo_passing_test', success: true }, { error: 'Expression [output.text == "Something incorrect"] is false for obtained output', name: 'foo_failing_test', success: false, index: 1 }, { error: 'invalidSyntax is not defined', name: 'foo_broken_test_input', success: false, index: 0 }, { error: 'invalidSyntax is not defined', name: 'foo_broken_test_output', success: false, index: 0 }], failed: 3, passed: 1, success: false })
+                    delete results.details[4].error
+                    delete results.details[5].error
+                    expect(results).toEqual({ details: [
+                        { name: 'foo_passing_test', success: true }, 
+                        { error: 'Expression [output.text == "Something incorrect"] is false for obtained output', name: 'foo_failing_test', success: false, index: 1 }, 
+                        { error: 'invalidSyntax is not defined', name: 'foo_broken_test_input', success: false, index: 0 }, 
+                        { error: 'invalidSyntax is not defined', name: 'foo_broken_test_output', success: false, index: 0 },
+                        { name: 'foo_malicious_test_1', success: false, index: 0 },
+                        { name: 'foo_malicious_test_2', success: false, index: 0 },
+                    ], failed: 5, passed: 1, success: false })
                     done()
                 })
         })
